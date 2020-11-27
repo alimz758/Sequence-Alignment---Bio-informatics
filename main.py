@@ -1,23 +1,17 @@
 import sys
-from global_alignment import GlobalAlignment
-from local_alignment import LocalAlignment
+import pandas as pd
+from global_local_alignment import SequenceInit
 from linear_space import LinearSpaceAlignment
 
-SEQ1 = "ATTA" 
-SEQ2 = "ATA"
-SCORE_MATRIX = {
-    'A': {'A': 2, 'C':-1, 'G':-1, 'T':-1}, 
-    'C': {'A':-1, 'C': 2, 'G':-1, 'T':-1}, 
-    'G': {'A':-1, 'C':-1, 'G': 2, 'T':-1},
-    'T': {'A':-1, 'C':-1, 'G':-1, 'T': 2},
-    '-': -2
-}
-ACCEPTED_MODES = ["global", "local", "middle"]
 
-# def read_from_file():
-#     f = open("sequences_info.txt", "r")
-#     info = f.read()
-#     print(info(1))
+ACCEPTED_MODES = ["global", "local", "middle"]
+ACCEPTED_CHARS = ['A', 'C', 'T', 'G']
+
+def get_score_matrix():
+    file = sys.argv[4]
+    if not file.endswith('.csv'):
+        raise ValueError("Only .csv is accepted for score_matrix")
+    return pd.read_csv(file)
 
 def get_mode():
     mode = sys.argv[1]
@@ -25,32 +19,26 @@ def get_mode():
         raise ValueError("Only " + str(ACCEPTED_MODES) + " are accepted")
     return mode
 
-def get_alignments(mode):
-
-    if mode == "global":
-        get_global()
-    elif mode == "local":
-        get_local()
-    elif mode == "middle":
-        get_middle()
-           
-def get_global():
-    GlobalAlignment(SEQ1, SEQ2, SCORE_MATRIX)
-
-def get_local():
-    LocalAlignment(SEQ1, SEQ2, SCORE_MATRIX)
-
-def get_middle():
-    LinearSpaceAlignment(SEQ1, SEQ2, SCORE_MATRIX)
     
-    
-# def get_local():
-    
-        
-def main():
-    # read_from_file()
+def get_sequence():
+    seq1 = sys.argv[2]
+    seq2 = sys.argv[3]
+    if any(c not in ACCEPTED_CHARS for c in seq1) or any(c not in ACCEPTED_CHARS for c in seq2): 
+        raise ValueError("Only " + str(ACCEPTED_CHARS) + " characters are accepted")
+    return seq1, seq2
+
+def get_alignments():
     mode = get_mode()
-    get_alignments(mode)
+    seq1, seq2 = get_sequence()
+    score_matrix_df = get_score_matrix()
+    if mode != "middle":
+        SequenceInit(seq1, seq2, score_matrix_df, mode)
+    else:
+        LinearSpaceAlignment(seq1, seq2, score_matrix_df)
+    
+          
+def main():
+    get_alignments()
 
 
 if __name__ == "__main__":
