@@ -1,10 +1,10 @@
 import sys
 import pandas as pd
 from global_local_alignment import SequenceInit
-#from linear_space import LinearSpaceAlignment
+from linear_space import LinearSpaceAlignment
 
 
-ACCEPTED_MODES = ["global", "local", "middle"]
+ACCEPTED_MODES = ["global", "local", "middle-global", "middle-local"]
 ACCEPTED_CHARS = ['A', 'C', 'T', 'G']
 
 def get_score_matrix():
@@ -24,7 +24,7 @@ def get_sequence():
     
     file1 = sys.argv[2]
     file2 = sys.argv[3]
-    if not file1.endswith('.txt') or not file2.endswith('.txt'):
+    if not file1.endswith('.txt') and not file2.endswith('.txt'):
         raise ValueError("Only .txt is accepted for sequence files")
     
     seq1 = open(file1, "r").read()
@@ -32,17 +32,17 @@ def get_sequence():
     if any(c not in ACCEPTED_CHARS for c in seq1) or any(c not in ACCEPTED_CHARS for c in seq2): 
         raise ValueError("Only " + str(ACCEPTED_CHARS) + " characters are accepted")
     
-    print("Total sequence length is: ", len(seq1) + len(seq2))
     return seq1, seq2
 
 def get_alignments():
     mode = get_mode()
     seq1, seq2 = get_sequence()
     score_matrix_df = get_score_matrix()
-    if mode != "middle":
-        SequenceInit(seq1, seq2, score_matrix_df, mode)
-    # else:
-    #     LinearSpaceAlignment(seq1, seq2, score_matrix_df)
+    if mode == "global" or mode == "local":
+        sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
+        sequence.print_results()
+    else:
+        LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
     
           
 def main():

@@ -14,7 +14,7 @@ def get_optimal_point(self, i, j):
 	max_score = float('-inf')
 	for r in range(1,self.row):
 		for c in range(1, self.column):
-			if self.path_matrix[r][c][0]>=max_score:
+			if self.path_matrix[r][c][0] >= max_score:
 				i = r
 				j = c
 				max_score = self.path_matrix[r][c][0]
@@ -29,9 +29,7 @@ def get_max_score(self):
 def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 	
 	if self.path_matrix[i][j][1]==0:
-		print(aligned_seq1)
-		print(aligned_seq2)
-		print()
+		self.alignments.append([aligned_seq1, aligned_seq2])
 		return 
 
 	if len(self.path_matrix[i][j][1])>1:
@@ -47,7 +45,7 @@ def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 			i = i-1
 			j = j-1
 
-		elif self.path_matrix[i][j][1]=='U':
+		elif self.path_matrix[i][j][1] == 'U':
 			aligned_seq1 = "-" + aligned_seq2
 			aligned_seq2 = self.seq2[i-1] + aligned_seq2
 			i = i-1
@@ -60,13 +58,14 @@ def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 		get_sequences(self, i, j, aligned_seq1, aligned_seq2)			
 
 
-def get_path(self, i, j, mode):
+
+def get_path(self, i, j):
 
 	paths = ''
-	match_mismatch_score = self.score.iloc[COL_MAP[self.seq2[i-1]]][self.seq1[j-1]]
+	match_mismatch_score = self.score_matrix.iloc[COL_MAP[self.seq2[i-1]]][self.seq1[j-1]]
 	diag = self.path_matrix[i-1][j-1][0] + match_mismatch_score
-	up = self.path_matrix[i-1][j][0] + self.score.iloc[4]['A']
-	left = self.path_matrix[i][j-1][0] + self.score.iloc[0]['-']
+	up = self.path_matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']
+	left = self.path_matrix[i][j-1][0] + self.score_matrix.iloc[0]['-']
 
 	self.path_matrix[i][j][0] = max(diag, up, left)
 
@@ -82,33 +81,29 @@ def get_path(self, i, j, mode):
 	self.path_matrix[i][j][1] = paths
 
 	if i==self.row-1 and j==self.column-1:
-		print(self.path_matrix)
-		score = 0
-		if mode == "global":
-			score = get_max_score(self)
-		elif mode == "local":
-			i, j, score = get_optimal_point(self, i, j)
-
-		print('{} alignment Score is: {}'.format(mode, score))
+		if self.mode == "global":
+			self.max_score = get_max_score(self)
+		elif self.mode == "local":
+			i, j, self.max_score = get_optimal_point(self, i, j)
 		get_sequences(self, i, j)
 		
 	elif j<self.column-1:
-		get_path(self, i ,j+1, mode)
+		get_path(self, i ,j+1)
 		
 	else:
-		get_path(self, i+1 ,1, mode)
+		get_path(self, i+1 ,1)
 
 
 def init_path_matrix(self):
 	
 	matrix = np.zeros([self.row, self.column], dtype='i,O') 
 	
-	for i in range(1,self.column):
-		matrix[0][i][0] = i * self.score.iloc[0]['-']
+	for i in range(1, self.column):
+		matrix[0][i][0] = i * self.score_matrix.iloc[0]['-']
 		matrix[0][i][1] = 'L'
 
-	for i in range(1,self.row):
-		matrix[i][0][0] = i * self.score.iloc[4]['A']
+	for i in range(1, self.row):
+		matrix[i][0][0] = i * self.score_matrix.iloc[4]['A']
 		matrix[i][0][1] = 'U'
 		
 	return matrix
@@ -116,11 +111,33 @@ def init_path_matrix(self):
 
 class SequenceInit(object):
 	
-	def __init__(self, seq1, seq2, score, mode):
+	def __init__(self, seq1, seq2, score_matrix, mode):
+	 
 		self.seq1 = seq1
 		self.seq2 = seq2
-		self.score = score
+		self.mode = mode
+		self.score_matrix = score_matrix
 		self.column = len(self.seq1)+1
 		self.row = len(self.seq2)+1
+		self.max_score = 0
+		self.alignments = []
 		self.path_matrix = init_path_matrix(self)
-		get_path(self, 1, 1, mode)	
+		get_path(self, 1, 1)	
+
+	def print_results(self):
+	
+		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
+		print(self.path_matrix)
+		print('Max {} alignment Score is: {}'.format(self.mode, self.max_score))
+		count = 1
+		for alignment in self.alignments:
+			print("Alignmnet #", count)
+			print(alignment[0])
+			print(alignment[1])
+			print()
+			count += 1
+
+	def get_all_alignments(self):
+	
+		return self.alignments
+	 
