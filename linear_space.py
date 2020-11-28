@@ -29,116 +29,113 @@ def get_max_score(scoreL, scoreR):
 
 def NWScore(self, seqa, seqb):
 
-    lena = len(seqa)
-    lenb = len(seqb)
-    pre_row = [0] * (lenb + 1)
-    cur_row = [0] * (lenb + 1)
+	lena = len(seqa)
+	lenb = len(seqb)
+	pre_row = [0] * (lenb + 1)
+	cur_row = [0] * (lenb + 1)
 
-    for j in range(1, lenb + 1):
-        pre_row[j] = pre_row[j - 1] + self.score_matrix.iloc[4]['A']
+	for j in range(1, lenb + 1):
+		pre_row[j] = pre_row[j - 1] + self.score_matrix.iloc[4]['A']
 
-    for i in range(1, lena + 1):
-        cur_row[0] = self.score_matrix.iloc[0]['-'] + pre_row[0]
-        for j in range(1, lenb + 1):
-            cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seqa[i-1]]][seqb[j-1]], 
-                            pre_row[j] + self.score_matrix.iloc[0]['-'], 
-                            cur_row[j - 1] + self.score_matrix.iloc[4]['A'])
+	for i in range(1, lena + 1):
+		cur_row[0] = self.score_matrix.iloc[0]['-'] + pre_row[0]
+		for j in range(1, lenb + 1):
+			cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seqa[i-1]]][seqb[j-1]], 
+							pre_row[j] + self.score_matrix.iloc[0]['-'], 
+							cur_row[j - 1] + self.score_matrix.iloc[4]['A'])
 
-        pre_row = cur_row
-        cur_row = [0] * (lenb + 1)
+		pre_row = cur_row
+		cur_row = [0] * (lenb + 1)
 
-    return pre_row
+	return pre_row
 
 
-def dynamicProgramming(self, x, y):
-    # M records is the score array
-    # Path stores the path information, inside of Path:
-    M = np.zeros((len(x) + 1, len(y) + 1))
-    Path = np.empty((len(x) + 1, len(y) + 1), dtype=object)
+def dynamicProgramming(self, seq1, seq2):
+	column = len(seq1)+1
+	row = len(seq2)+1
+	matrix = np.zeros([row, column], dtype='i,O') 
+	
+	for i in range(1, column):
+		matrix[0][i][0] = i * self.score_matrix.iloc[0]['-']
+		matrix[0][i][1] = 'L'
 
-    for i in range(1, len(y) + 1):
-        M[0][i] = M[0][i-1] + self.score_matrix.iloc[4]['A']
-        Path[0][i] = LEFT
-    for j in range(1, len(x) + 1):
-        M[j][0] = M[j-1][0] + self.score_matrix.iloc[0]['-']
-        Path[j][0] = UP
+	for i in range(1, row):
+		matrix[i][0][0] = i * self.score_matrix.iloc[4]['A']
+		matrix[i][0][1] = 'U'
 
-    for i in range(1, len(x) + 1):
-        for j in range(1, len(y) + 1):
-        
-            M[i][j] = max(M[i-1][j-1] + self.score_matrix.iloc[COL_MAP[x[i-1]]][y[j-1]], M[i-1][j] + self.score_matrix.iloc[4]['A'], M[i][j-1] + self.score_matrix.iloc[0]['-'])
-            if M[i][j] == M[i-1][j-1] + self.score_matrix.iloc[COL_MAP[x[i-1]]][y[j-1]]:
-                Path[i][j] =  DIAG
-            elif M[i][j] == M[i-1][j] + self.score_matrix.iloc[4]['A']:
-                Path[i][j] = UP
-            else:
-                Path[i][j] = LEFT
+	for i in range(1, row):
+		for j in range(1, column):
+			matrix[i][j][0] = max(matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq2[i-1]]][seq1[j-1]], matrix[i-1][j][0] + self.score_matrix.iloc[4]['A'], matrix[i][j-1][0] + self.score_matrix.iloc[0]['-'])
+			if matrix[i][j][0] == matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq2[i-1]]][seq1[j-1]]:
+				matrix[i][j][1] =  'D'
+			elif matrix[i][j][0] == matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']:
+				matrix[i][j][1] = 'U'
+			else:
+				matrix[i][j][1] = 'L'
 
-    row = []
-    column= []
-    i = len(x)
-    j = len(y)
-    while Path[i][j]:
-        if Path[i][j] == DIAG:
-            row.insert(0, y[j-1])
-            column.insert(0, x[i-1])
+	row = []
+	column= []
+	i = len(seq2)
+	j = len(seq1)
+	while matrix[i][j][1]:
+		if matrix[i][j][1] == 'D':
+			row.insert(0, seq2[j-1])
+			column.insert(0, seq1[i-1])
+			i -= 1
+			j -= 1
+		elif matrix[i][j][1] == 'U':
+			row.insert(0, '-')
+			column.insert(0, seq2[i-1])
+			i -= 1
+		elif matrix[i][j][1] == 'L':
+			column.insert(0, '-')
+			row.insert(0, seq1[j-1])
+			j -= 1
+	return row, column 
 
-            i -= 1
-            j -= 1
-        elif Path[i][j] == UP:
-            row.insert(0, '-')
-            column.insert(0, x[i-1])
-            i -= 1
-        elif Path[i][j] == LEFT:
-            column.insert(0, '-')
-            row.insert(0, y[j-1])
-            j -= 1
+def Hirschberg(self, seq1, seq2):
+	row = ""
+	column = ""
+	if len(seq1) == 0:
+		column = '-' * len(seq2)
+		row = seq2
+	elif len(seq2) == 0:
+		column += seq1
+		row += '-' * len(seq1)
+	elif len(seq1) == 1 or len(seq2) == 1:
+		row,column = dynamicProgramming(self, seq1, seq2)
+		row, column = map(lambda x: "".join(x), [row, column]) 
+	else:
 
-    return row, column 
+		xmid = len(seq1)// 2
+		ylen = len(seq2)
 
-def Hirschberg(self, x, y):
-    row = ""
-    column = ""
-    if len(x) == 0:
-        column = '-' * len(y)
-        row = y
-    elif len(y) == 0:
-        column += x
-        row += '-' * len(x)
-    elif len(x) == 1 or len(y) == 1:
-        row,column = dynamicProgramming(self, x, y)
-        row, column = map(lambda x: "".join(x), [row, column]) 
-    else:
+		scoreL = NWScore(self, seq1[:xmid], seq2)
+		scoreR = NWScore(self, seq1[xmid:][::-1], seq2[::-1])
+		ymid = get_max_score(scoreL, scoreR)
 
-        xmid = len(x)// 2
-        ylen = len(y)
-
-        scoreL = NWScore(self, x[:xmid], y)
-        scoreR = NWScore(self, x[xmid:][::-1], y[::-1])
-        ymid = get_max_score(scoreL, scoreR)
-
-        row_l, column_u = Hirschberg(self, x[:xmid], y[:ymid])
-        row_r, column_d = Hirschberg(self, x[xmid:], y[ymid:])
-        row = row_l + row_r
-        column = column_u + column_d 
-    return row, column
+		row_l, column_u = Hirschberg(self, seq1[:xmid], seq2[:ymid])
+		row_r, column_d = Hirschberg(self, seq1[xmid:], seq2[ymid:])
+		row = row_l + row_r
+		column = column_u + column_d 
+	return row, column
 
 
 class LinearSpaceAlignment():
 
-    def __init__(self, seq1, seq2, score_matrix, mode):
-        self.seq1 = seq1
-        self.seq2 = seq2
-        self.mode = mode
-        self.row_size = len(seq1) + 1
-        self.col_size = len(seq2) + 1
-        self.score_matrix = score_matrix
-        z,w = Hirschberg(self, self.seq1, self.seq2)
-        print(w)
-        print(z)
+	def __init__(self, seq1, seq2, score_matrix, mode):
+		self.seq1 = seq1
+		self.seq2 = seq2
+		self.mode = mode
+		self.row_size = len(seq1) + 1
+		self.col_size = len(seq2) + 1
+		self.score_matrix = score_matrix
+		z,w = Hirschberg(self, self.seq1, self.seq2)
+		print(z)
+		print(w)
 
 
 
 
 if __name__ == "__main__":
-    LinearSpaceAlignment()
+	LinearSpaceAlignment()
