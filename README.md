@@ -34,6 +34,22 @@ For instance this would return all global alignments using `Needleman–Wunsch_a
 
 > python main.py global seq1.txt seq2.txt score_matrix.csv
 
+```
+Total sequence length is:  7
+[[( 0, 0) (-1, 'L') (-2, 'L') (-3, 'L') (-4, 'L')]
+ [(-1, 'U') ( 2, 'D') ( 1, 'L') ( 0, 'L') (-1, 'LD')]
+ [(-2, 'U') ( 1, 'U') ( 4, 'D') ( 3, 'D') ( 2, 'L')]
+ [(-3, 'U') ( 0, 'DU') ( 3, 'U') ( 3, 'D') ( 5, 'D')]]
+Max global alignment Score is: 5
+Alignmnet # 1
+ATTA
+AT-A
+
+Alignmnet # 2
+ATTA
+A-TA
+```
+
 
 ### Score Matrix
 
