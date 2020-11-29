@@ -33,3 +33,20 @@ There are 4 different modes to get sequence alignments:
 For instance this would return all global alignments using `Needleman–Wunsch_algorithm`:
 
 > python main.py global seq1.txt seq2.txt score_matrix.csv
+
+
+### Score Matrix
+
+The score matrix is a `csv` file that follows the same format as desired by the project. If you wish to change the scores, you can directly modify the csv file.
+
+You can see its format below:
+
+```
+X,  A,  C,  T,  G,  -
+A,  2,  -1, -1, -1, -1
+C,  -1, 2,  -1, -1, -1
+T,  -1, -1, 2,  -1, -1
+G,  -1, -1, -1, 2,  -1
+-,  -1, -1, -1, -1
+
+```
