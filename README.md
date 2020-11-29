@@ -32,9 +32,8 @@ There are 4 different modes to get sequence alignments:
 
 For instance this would return all global alignments using `Needleman–Wunsch_algorithm`:
 
-> python main.py global seq1.txt seq2.txt score_matrix.csv
-
 ```
+> python main.py global seq1.txt seq2.txt score_matrix.csv
 Total sequence length is:  7
 [[( 0, 0) (-1, 'L') (-2, 'L') (-3, 'L') (-4, 'L')]
  [(-1, 'U') ( 2, 'D') ( 1, 'L') ( 0, 'L') (-1, 'LD')]
