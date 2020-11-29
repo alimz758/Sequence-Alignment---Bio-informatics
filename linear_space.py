@@ -16,36 +16,36 @@ COL_MAP = {
 }
 
 def get_max_score(scoreL, scoreR):
-    max_index = 0
-    max_sum = float('-Inf')
-    for i, (l, r) in enumerate(zip(scoreL, scoreR[::-1])):
-        # calculate the diagonal maximum index
-        if sum([l, r]) > max_sum:
-            max_sum = sum([l, r])
-            max_index = i
-    return max_index 
+	max_index = 0
+	max_sum = float('-Inf')
+	for i, (l, r) in enumerate(zip(scoreL, scoreR[::-1])):
+		# calculate the diagonal maximum index
+		if sum([l, r]) > max_sum:
+			max_sum = sum([l, r])
+			max_index = i
+	return max_index 
 
 
 
-def NWScore(self, seqa, seqb):
+def NWScore(self, seq1, seq2):
 
-	lena = len(seqa)
-	lenb = len(seqb)
-	pre_row = [0] * (lenb + 1)
-	cur_row = [0] * (lenb + 1)
+	len1 = len(seq1) + 1
+	len2 = len(seq2) + 1
+	pre_row = [0] * (len2)
+	cur_row = [0] * (len2)
 
-	for j in range(1, lenb + 1):
+	for j in range(1, len2):
 		pre_row[j] = pre_row[j - 1] + self.score_matrix.iloc[4]['A']
 
-	for i in range(1, lena + 1):
+	for i in range(1, len1):
 		cur_row[0] = self.score_matrix.iloc[0]['-'] + pre_row[0]
-		for j in range(1, lenb + 1):
-			cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seqa[i-1]]][seqb[j-1]], 
+		for j in range(1, len2):
+			cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], 
 							pre_row[j] + self.score_matrix.iloc[0]['-'], 
 							cur_row[j - 1] + self.score_matrix.iloc[4]['A'])
 
 		pre_row = cur_row
-		cur_row = [0] * (lenb + 1)
+		cur_row = [0] * (len2)
 
 	return pre_row
 
@@ -54,6 +54,9 @@ def dynamicProgramming(self, seq1, seq2):
 	column = len(seq1)+1
 	row = len(seq2)+1
 	matrix = np.zeros([row, column], dtype='i,O') 
+	max_score = float('-inf')
+	opt_i = 0
+	opt_j = 0
 	
 	for i in range(1, column):
 		matrix[0][i][0] = i * self.score_matrix.iloc[0]['-']
@@ -72,6 +75,11 @@ def dynamicProgramming(self, seq1, seq2):
 				matrix[i][j][1] = 'U'
 			else:
 				matrix[i][j][1] = 'L'
+			#for local
+			if matrix[i][j][0] >= max_score:
+				max_score = matrix[i][j][0]
+				opt_i = i
+				opt_j = j
 
 	row = []
 	column= []
