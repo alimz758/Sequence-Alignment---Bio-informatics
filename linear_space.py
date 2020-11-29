@@ -2,6 +2,8 @@
 import copy
 import pdb
 import numpy as np
+import time
+import resource
 
 LEFT = 1 
 DIAG = 2
@@ -87,8 +89,8 @@ def dynamicProgramming(self, seq1, seq2):
 	j = len(seq1)
 	while matrix[i][j][1]:
 		if matrix[i][j][1] == 'D':
-			row.insert(0, seq2[j-1])
-			column.insert(0, seq1[i-1])
+			column.insert(0, seq2[i-1])
+			row.insert(0, seq1[j-1])
 			i -= 1
 			j -= 1
 		elif matrix[i][j][1] == 'U':
@@ -99,7 +101,7 @@ def dynamicProgramming(self, seq1, seq2):
 			column.insert(0, '-')
 			row.insert(0, seq1[j-1])
 			j -= 1
-	return row, column 
+	return column, row 
 
 def Hirschberg(self, seq1, seq2):
 	row = ""
@@ -108,8 +110,8 @@ def Hirschberg(self, seq1, seq2):
 		column = '-' * len(seq2)
 		row = seq2
 	elif len(seq2) == 0:
-		column += seq1
-		row += '-' * len(seq1)
+		column = seq1
+		row = '-' * len(seq1)
 	elif len(seq1) == 1 or len(seq2) == 1:
 		row,column = dynamicProgramming(self, seq1, seq2)
 		row, column = map(lambda x: "".join(x), [row, column]) 
@@ -138,9 +140,14 @@ class LinearSpaceAlignment():
 		self.row_size = len(seq1) + 1
 		self.col_size = len(seq2) + 1
 		self.score_matrix = score_matrix
-		z,w = Hirschberg(self, self.seq1, self.seq2)
+		t0 = time.time()
+		w, z = Hirschberg(self, self.seq1, self.seq2)
+		t1 = time.time()
 		print(z)
 		print(w)
+		print("Total run time in seconds: ", str(round(t1-t0, 4)))
+		print("Total memory usage(MB on OS X): ", str(round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000000, 2))) #ru_maxrss:maximum resident set size
+
 
 
 
