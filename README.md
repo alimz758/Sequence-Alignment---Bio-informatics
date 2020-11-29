@@ -57,7 +57,7 @@ The score matrix is a `csv` file that follows the same format as desired by the 
 You can see its format below:
 
 ```
-X,  A,  C,  T,  G,  -
+ ,  A,  C,  T,  G,  -
 A,  2,  -1, -1, -1, -1
 C,  -1, 2,  -1, -1, -1
 T,  -1, -1, 2,  -1, -1
