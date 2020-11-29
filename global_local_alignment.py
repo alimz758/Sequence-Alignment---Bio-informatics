@@ -46,7 +46,7 @@ def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 			j = j-1
 
 		elif self.path_matrix[i][j][1] == 'U':
-			aligned_seq1 = "-" + aligned_seq2
+			aligned_seq1 = "-" + aligned_seq1
 			aligned_seq2 = self.seq2[i-1] + aligned_seq2
 			i = i-1
 
@@ -97,7 +97,8 @@ def get_path(self, i, j):
 def init_path_matrix(self):
 	
 	matrix = np.zeros([self.row, self.column], dtype='i,O') 
-	
+	if self.mode == "local":
+		return matrix
 	for i in range(1, self.column):
 		matrix[0][i][0] = i * self.score_matrix.iloc[0]['-']
 		matrix[0][i][1] = 'L'
