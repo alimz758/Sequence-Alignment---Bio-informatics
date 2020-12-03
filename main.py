@@ -6,7 +6,7 @@ from linear_space import LinearSpaceAlignment
 #from test_linear import LinearSpaceAlignment
 
 
-ACCEPTED_MODES = ["global", "local", "middle-global", "middle-local"]
+ACCEPTED_MODES = ["global", "local"]
 ACCEPTED_CHARS = ['A', 'C', 'T', 'G']
 
 
@@ -42,13 +42,26 @@ def get_alignments():
     mode = get_mode()
     seq1, seq2 = get_sequence()
     score_matrix_df = get_score_matrix()
-    if mode == "global" or mode == "local":
+    # global
+    if mode == "global":
+        # Needleman–Wunsch_algorithm
         t0 = time.time()
         sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
         t1 = time.time()
         sequence.print_results(t1, t0)
+        # Hirschberg
+        ls = LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
+        ls.print_results()
+    # local
     else:
-        LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
+        # Needleman–Wunsch_algorithm
+        t0 = time.time()
+        sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
+        t1 = time.time()
+        sequence.print_results(t1, t0)
+        # Hirschberg
+        ls = LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
+        ls.print_results()
     
 def main():
     get_alignments()

@@ -22,13 +22,10 @@ To run this programm you need to specify 4 things.
 
 There are 4 different modes to get sequence alignments:
 
-1. `global`: Get all global alignments using `Needleman–Wunsch_algorithm`
+1. `global`: Get all global alignments using `Needleman–Wunsch` and `Hirschberg`
 
-2. `local`: Get all local alignments using `Needleman–Wunsch_algorithm`
+2. `local`: Get all local alignments using `Needleman–Wunsch` and `Hirschberg`
 
-3. `middle-global`: Get global alignment using `Hirschberg`
-
-4. `middle-local`: Get local alignment using `Hirschberg`
 
 For instance this would return all global alignments using `Needleman–Wunsch_algorithm`:
 
@@ -65,9 +62,3 @@ G,  -1, -1, -1, 2,  -1
 -,  -1, -1, -1, -1
 
 ```
-
-### Memory Usage
-
-First `pip install -U memory_profiler` then use `-m memory_profiler` withing the command
-
-> python -m memory_profiler  main.py middle-global  seq1.txt seq2.txt score_matrix.csv

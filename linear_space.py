@@ -8,9 +8,6 @@ import resource
 import sys
 import tracemalloc
 
-LEFT = 1 
-DIAG = 2
-UP = 3
 
 COL_MAP = {
 	'A': 0,
@@ -47,8 +44,7 @@ def NWScore(self, seq1, seq2):
 		for j in range(1, len2):
 			cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], 
 							pre_row[j] + self.score_matrix.iloc[0]['-'], 
-							cur_row[j - 1] + self.score_matrix.iloc[4]['A'],
-		0)
+							cur_row[j - 1] + self.score_matrix.iloc[4]['A'])
 
 		pre_row = cur_row
 		cur_row = [0] * (len2)
@@ -109,8 +105,8 @@ def local_alignment(self, seq1, seq2):
 	
 	
 def global_alignment(self, seq1, seq2):
-	column = len(seq1)+1
-	row = len(seq2)+1
+	row = len(seq1)+1
+	column = len(seq2)+1
 	matrix = np.zeros([row, column], dtype='i,O') 
 	
 	for i in range(1, column):
@@ -123,8 +119,8 @@ def global_alignment(self, seq1, seq2):
 
 	for i in range(1, row):
 		for j in range(1, column):
-			matrix[i][j][0] = max(matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq2[i-1]]][seq1[j-1]], matrix[i-1][j][0] + self.score_matrix.iloc[4]['A'], matrix[i][j-1][0] + self.score_matrix.iloc[0]['-'])
-			if matrix[i][j][0] == matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq2[i-1]]][seq1[j-1]]:
+			matrix[i][j][0] = max(matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], matrix[i-1][j][0] + self.score_matrix.iloc[4]['A'], matrix[i][j-1][0] + self.score_matrix.iloc[0]['-'])
+			if matrix[i][j][0] == matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]]:
 				matrix[i][j][1] =  'D'
 			elif matrix[i][j][0] == matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']:
 				matrix[i][j][1] = 'U'
@@ -133,25 +129,25 @@ def global_alignment(self, seq1, seq2):
 
 	row = []
 	column = []
-	i = len(seq2)
-	j = len(seq1)
+	i = len(seq1)
+	j = len(seq2)
 	while matrix[i][j][1]:
 		if matrix[i][j][1] == 'D':
-			column.insert(0, seq2[i-1])
-			row.insert(0, seq1[j-1])
+			column.insert(0, seq2[j-1])
+			row.insert(0, seq1[i-1])
 			i -= 1
 			j -= 1
 		elif matrix[i][j][1] == 'U':
-			row.insert(0, '-')
-			column.insert(0, seq2[i-1])
+			column.insert(0, '-')
+			row.insert(0, seq1[i-1])
 			i -= 1
 		elif matrix[i][j][1] == 'L':
-			column.insert(0, '-')
-			row.insert(0, seq1[j-1])
+			row.insert(0, '-')
+			column.insert(0, seq2[j-1])
 			j -= 1
 	row, column = map(lambda x: "".join(x), [row, column]) 
 
-	return column, row 
+	return row, column 
 
 
 def Hirschberg(self, seq1, seq2):
@@ -167,7 +163,7 @@ def Hirschberg(self, seq1, seq2):
 		column = seq1
 		row = '-' * len1
 	elif len1 == 1 or len2 == 1:
-		if self.mode == "middle-global":
+		if self.mode == "global":
 			row, column = global_alignment(self, seq1, seq2)
 		else:
 			row, column = local_alignment(self, seq1, seq2)
@@ -195,20 +191,29 @@ class LinearSpaceAlignment():
 		self.col_size = len(seq2) + 1
 		self.score_matrix = score_matrix
 		tracemalloc.start()
-		t0 = time.time()
+		self.t0 = time.time()
 		snapshot1 = tracemalloc.take_snapshot()
-		w, z = Hirschberg(self, self.seq1, self.seq2)
+		self.aligned_seq2, self.aligned_seq1 = Hirschberg(self, self.seq1, self.seq2)
+		self.t1 = time.time()
 		snapshot2 = tracemalloc.take_snapshot()
-		top_stats = snapshot2.compare_to(snapshot1, 'lineno')
-		t1 = time.time()
-		print(w)
-		print(z)
-		for stat in top_stats[:10]:
+		self.top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+
+
+	def print_results(self):
+    	
+		print("\n\n==========   Hirschberg  ==========")
+		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
+		print("Total run time in seconds: ", str(round(self.t1 - self.t0, 4)))
+		if len(self.aligned_seq1) == 0:
+			return
+		print("Alignmnet #", 1)
+		print(self.aligned_seq1)
+		print(self.aligned_seq2)
+		print()
+		print("Memory Usage:")
+		for stat in self.top_stats[:5]:
 			print(stat)
-		print("Total run time in seconds: ", str(round(t1-t0, 4)))
-		print("Total memory usage(MB on OS X): ", str(round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000000, 2))) #ru_maxrss:maximum resident set size
-
-
+		print()
 
 
 #test

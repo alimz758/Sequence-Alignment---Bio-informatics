@@ -139,13 +139,11 @@ class SequenceInit(object):
 
 	def print_results(self, t1, t0):
 	
-		for stat in self.top_stats[:10]:
-			print(stat)
+		print("\n\n==========   Needleman–Wunsch  ==========")
 		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
 		print(self.path_matrix)
 		print('Max {} alignment Score is: {}'.format(self.mode, self.max_score))
 		print("Total run time in seconds: ", str(round(t1-t0, 4)))
-		print("Total memory usage(MB on OS X): ", str(round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000000, 2))) #ru_maxrss:maximum resident set size
 		count = 1
 		if len(self.alignments[0][0]) == 0:
 			return
@@ -155,6 +153,10 @@ class SequenceInit(object):
 			print(alignment[1])
 			print()
 			count += 1
+		print("Memory Usage:")
+		for stat in self.top_stats[:5]:
+			print(stat)
+		print()
 
 	def get_all_alignments(self):
 	
