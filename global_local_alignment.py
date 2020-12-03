@@ -1,5 +1,10 @@
 import sys
 import numpy as np
+import time
+import resource
+import pandas as pd
+import tracemalloc
+
 
 COL_MAP = {
 	'A': 0,
@@ -28,7 +33,7 @@ def get_max_score(self):
 			
 def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 	
-	if self.path_matrix[i][j][1]==0:
+	if (self.mode == "global" and self.path_matrix[i][j][1]==0) or (self.mode == "local" and self.path_matrix[i][j][0]==0):
 		self.alignments.append([aligned_seq1, aligned_seq2])
 		return 
 
@@ -58,7 +63,6 @@ def get_sequences(self, i, j, aligned_seq1 = "", aligned_seq2 = ""):
 		get_sequences(self, i, j, aligned_seq1, aligned_seq2)			
 
 
-
 def get_path(self, i, j):
 
 	paths = ''
@@ -67,7 +71,10 @@ def get_path(self, i, j):
 	up = self.path_matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']
 	left = self.path_matrix[i][j-1][0] + self.score_matrix.iloc[0]['-']
 
-	self.path_matrix[i][j][0] = max(diag, up, left)
+	if self.mode == "global":
+		self.path_matrix[i][j][0] = max(diag, up, left)
+	else:
+		self.path_matrix[i][j][0] = max(diag, up, left, 0)
 
 	if self.path_matrix[i][j][0]==left:
 		paths = paths + 'L'
@@ -89,7 +96,7 @@ def get_path(self, i, j):
 		
 	elif j<self.column-1:
 		get_path(self, i ,j+1)
-		
+
 	else:
 		get_path(self, i+1 ,1)
 
@@ -123,14 +130,25 @@ class SequenceInit(object):
 		self.max_score = 0
 		self.alignments = []
 		self.path_matrix = init_path_matrix(self)
-		get_path(self, 1, 1)	
+		tracemalloc.start()
+		snapshot1 = tracemalloc.take_snapshot()
+		get_path(self, 1, 1)
+		snapshot2 = tracemalloc.take_snapshot()
+		self.top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+		
 
-	def print_results(self):
+	def print_results(self, t1, t0):
 	
+		for stat in self.top_stats[:10]:
+			print(stat)
 		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
 		print(self.path_matrix)
 		print('Max {} alignment Score is: {}'.format(self.mode, self.max_score))
+		print("Total run time in seconds: ", str(round(t1-t0, 4)))
+		print("Total memory usage(MB on OS X): ", str(round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1000000, 2))) #ru_maxrss:maximum resident set size
 		count = 1
+		if len(self.alignments[0][0]) == 0:
+			return
 		for alignment in self.alignments:
 			print("Alignmnet #", count)
 			print(alignment[0])
@@ -142,3 +160,12 @@ class SequenceInit(object):
 	
 		return self.alignments
 	 
+
+if __name__ == "__main__":
+	file = sys.argv[1]
+	if not file.endswith('.csv'):
+		raise ValueError("Only .csv is accepted for score_matrix") 
+	t0 = time.time()
+	sequence = SequenceInit("AGTACGGTACGTAA", "TAGAAGTT", pd.read_csv(file), "local")
+	t1 = time.time()
+	sequence.print_results(t1, t0)

@@ -4,7 +4,7 @@ Course project for CS121 at UCLA.
 
 For a full description please take a look at `specs.pdf`, project#2.
 
-This program can run for gloabl alignment and local alignment on two different alogirthms. `Needleman–Wunsch_algorithm` and `Hirschberg` for space efficiency
+This program can run for global alignment and local alignments utilizing two different alogirthms: `Needleman–Wunsch_algorithm` and `Hirschberg` for space efficiency
 
 ## How to Run
 
@@ -65,3 +65,9 @@ G,  -1, -1, -1, 2,  -1
 -,  -1, -1, -1, -1
 
 ```
+
+### Memory Usage
+
+First `pip install -U memory_profiler` then use `-m memory_profiler` withing the command
+
+> python -m memory_profiler  main.py middle-global  seq1.txt seq2.txt score_matrix.csv

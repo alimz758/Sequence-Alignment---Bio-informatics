@@ -1,11 +1,14 @@
 import sys
 import pandas as pd
+import time
 from global_local_alignment import SequenceInit
 from linear_space import LinearSpaceAlignment
+#from test_linear import LinearSpaceAlignment
 
 
 ACCEPTED_MODES = ["global", "local", "middle-global", "middle-local"]
 ACCEPTED_CHARS = ['A', 'C', 'T', 'G']
+
 
 def get_score_matrix():
     file = sys.argv[4]
@@ -34,17 +37,19 @@ def get_sequence():
     
     return seq1, seq2
 
+
 def get_alignments():
     mode = get_mode()
     seq1, seq2 = get_sequence()
     score_matrix_df = get_score_matrix()
     if mode == "global" or mode == "local":
+        t0 = time.time()
         sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
-        sequence.print_results()
+        t1 = time.time()
+        sequence.print_results(t1, t0)
     else:
         LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
     
-          
 def main():
     get_alignments()
 
