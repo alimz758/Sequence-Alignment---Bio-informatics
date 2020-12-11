@@ -1,10 +1,7 @@
 # Followed https://en.wikipedia.org/wiki/Hirschberg's_algorithm for this one
-import copy
-import pdb
 import numpy as np
 import pandas as pd
 import time
-import resource
 import sys
 import tracemalloc
 
@@ -28,6 +25,37 @@ def get_max_score(scoreL, scoreR):
 	return max_index 
 
 
+# returns the position of the cell with maximum value; it's using two rows of the matrix
+def SmithWaterman(self, x, y):
+	m = len(x)
+	n = len(y)
+	h = [[0 for i in range(m+1)], [0]]
+	max_value = 0
+	max_i = 0
+	max_j = 0
+	for j in range(1, n+1):
+		for i in range(1, m+1):
+			h[1].append(max(0, h[0][i-1] + self.score_matrix.iloc[COL_MAP[y[j-1]]][x[i-1]], h[1][i-1] + self.score_matrix.iloc[0]['-'], h[0][i] + self.score_matrix.iloc[0]['-']))
+			if(h[1][i] > max_value):
+				max_value = h[1][i]
+				max_i = i-1
+				max_j = j-1
+		h[0] = h[1][:]
+		h[1] = [0]
+				
+	return [max_i, max_j]
+
+# "crops" the initial arrays to smaller sub-arrays that correspond to the optimal local alignment
+def LocalToGlobal(self, x, y):
+	border = SmithWaterman(self, x, y)
+	xx = x[:border[0]+1]
+	yy = y[:border[1]+1]
+	xx_reversed = xx[::-1]
+	yy_reversed = yy[::-1]
+	border = SmithWaterman(self, xx_reversed, yy_reversed)
+	xxx = xx_reversed[:border[0]+1]
+	yyy = yy_reversed[:border[1]+1]
+	return [xxx[::-1], yyy[::-1]]
 
 def NWScore(self, seq1, seq2):
 
@@ -163,10 +191,7 @@ def Hirschberg(self, seq1, seq2):
 		column = seq1
 		row = '-' * len1
 	elif len1 == 1 or len2 == 1:
-		if self.mode == "global":
-			row, column = global_alignment(self, seq1, seq2)
-		else:
-			row, column = local_alignment(self, seq1, seq2)
+		row, column = global_alignment(self, seq1, seq2)
 	else:
 
 		xmid = len1 // 2
@@ -193,7 +218,9 @@ class LinearSpaceAlignment():
 		tracemalloc.start()
 		self.t0 = time.time()
 		snapshot1 = tracemalloc.take_snapshot()
-		self.aligned_seq2, self.aligned_seq1 = Hirschberg(self, self.seq1, self.seq2)
+		if self.mode == "local":
+			self.seq1, self.seq2 = LocalToGlobal(self, self.seq1, self.seq2)
+		self.aligned_seq1, self.aligned_seq2 = Hirschberg(self, self.seq1, self.seq2)
 		self.t1 = time.time()
 		snapshot2 = tracemalloc.take_snapshot()
 		self.top_stats = snapshot2.compare_to(snapshot1, 'lineno')
