@@ -25,7 +25,7 @@ def get_max_score(scoreL, scoreR):
 
 
 def get_opt_points(self, seq1, seq2):
-    	matrix = np.zeros((len(seq1) + 1, len(seq2) + 1))
+	matrix = np.zeros((len(seq1) + 1, len(seq2) + 1))
 	max_score = 0
 	opt_i = 0
 	opt_j = 0
@@ -53,7 +53,7 @@ def getGlobal(self, seq1, seq2):
 	border = get_opt_points(self, new_seq1_reversed, new_seq2_reversed)
 	final_seq1 = new_seq1_reversed[:border[0]+1]
 	final_seq2 = new_seq2_reversed[:border[1]+1]
-	return [final_seq1[::-1], final_seq2[::-1]]
+	return final_seq1[::-1], final_seq2[::-1]
 
 def NWScore(self, seq1, seq2):
 
@@ -183,8 +183,8 @@ class LinearSpaceAlignment():
 		print(self.aligned_seq2)
 		print()
 		print("Memory Usage:")
-		for stat in self.top_stats[:5]:
-			print(stat)
+		for stat in self.top_stats[:1]:
+			print(str(stat).rsplit(":", 1)[1])
 		print()
 
 

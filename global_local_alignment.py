@@ -152,8 +152,8 @@ class SequenceInit(object):
 			print()
 			count += 1
 		print("Memory Usage:")
-		for stat in self.top_stats[:5]:
-			print(stat)
+		for stat in self.top_stats[:1]:
+			print(str(stat).rsplit(":", 1)[1])
 		print()
 
 	def get_all_alignments(self):

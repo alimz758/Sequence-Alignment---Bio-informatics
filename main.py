@@ -43,27 +43,19 @@ def get_alignments():
     seq1, seq2 = get_sequence()
     score_matrix_df = get_score_matrix()
     print("\n================== Results ==================")
-    print("Total sequence length is: ", len(seq1) + len(seq2))
-    # global
-    if mode == "global":
-        # Needleman–Wunsch_algorithm
-        t0 = time.time()
-        sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
-        t1 = time.time()
-        sequence.print_results(t1, t0)
-        # Hirschberg
-        ls = LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
-        ls.print_results()
-    # local
-    else:
-        # Needleman–Wunsch_algorithm
-        t0 = time.time()
-        sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
-        t1 = time.time()
-        sequence.print_results(t1, t0)
-        # Hirschberg
-        ls = LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
-        ls.print_results()
+    print("Sequence1: ", seq1)
+    print("Sequence2: ", seq2)
+    print("Total sequences length is: ", len(seq1) + len(seq2))
+   
+     # Needleman–Wunsch_algorithm
+    t0 = time.time()
+    sequence = SequenceInit(seq1, seq2, score_matrix_df, mode)
+    t1 = time.time()
+    sequence.print_results(t1, t0)
+    # Hirschberg
+    ls = LinearSpaceAlignment(seq1, seq2, score_matrix_df, mode)
+    ls.print_results()
+   
     
 def main():
     get_alignments()
