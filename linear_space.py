@@ -18,44 +18,42 @@ def get_max_score(scoreL, scoreR):
 	max_index = 0
 	max_sum = float('-Inf')
 	for i, (l, r) in enumerate(zip(scoreL, scoreR[::-1])):
-		# calculate the diagonal maximum index
 		if sum([l, r]) > max_sum:
 			max_sum = sum([l, r])
 			max_index = i
 	return max_index 
 
 
-# returns the position of the cell with maximum value; it's using two rows of the matrix
-def SmithWaterman(self, x, y):
-	m = len(x)
-	n = len(y)
-	h = [[0 for i in range(m+1)], [0]]
-	max_value = 0
-	max_i = 0
-	max_j = 0
-	for j in range(1, n+1):
-		for i in range(1, m+1):
-			h[1].append(max(0, h[0][i-1] + self.score_matrix.iloc[COL_MAP[y[j-1]]][x[i-1]], h[1][i-1] + self.score_matrix.iloc[0]['-'], h[0][i] + self.score_matrix.iloc[0]['-']))
-			if(h[1][i] > max_value):
-				max_value = h[1][i]
-				max_i = i-1
-				max_j = j-1
-		h[0] = h[1][:]
-		h[1] = [0]
+def get_opt_points(self, seq1, seq2):
+    	matrix = np.zeros((len(seq1) + 1, len(seq2) + 1))
+	max_score = 0
+	opt_i = 0
+	opt_j = 0
+	
+	for i in range(1, len(seq1) + 1):
+		for j in range(1, len(seq2)+1):
+			matrix[i][j] = max(matrix[i-1][j-1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]],
+							   matrix[i][j-1] + self.score_matrix.iloc[0]['-'],
+							   matrix[i-1][j] + self.score_matrix.iloc[0]['-'],
+							   0)
+			if matrix[i][j] > max_score:
+				max_score = matrix[i][j]
+				opt_i = i-1
+				opt_j = j-1
 				
-	return [max_i, max_j]
+	return [opt_i, opt_j]
 
-# "crops" the initial arrays to smaller sub-arrays that correspond to the optimal local alignment
-def LocalToGlobal(self, x, y):
-	border = SmithWaterman(self, x, y)
-	xx = x[:border[0]+1]
-	yy = y[:border[1]+1]
-	xx_reversed = xx[::-1]
-	yy_reversed = yy[::-1]
-	border = SmithWaterman(self, xx_reversed, yy_reversed)
-	xxx = xx_reversed[:border[0]+1]
-	yyy = yy_reversed[:border[1]+1]
-	return [xxx[::-1], yyy[::-1]]
+
+def getGlobal(self, seq1, seq2):
+	border = get_opt_points(self, seq1, seq2)
+	new_seq1 = seq1[:border[0]+1]
+	new_seq2 = seq2[:border[1]+1]
+	new_seq1_reversed = new_seq1[::-1]
+	new_seq2_reversed = new_seq2[::-1]
+	border = get_opt_points(self, new_seq1_reversed, new_seq2_reversed)
+	final_seq1 = new_seq1_reversed[:border[0]+1]
+	final_seq2 = new_seq2_reversed[:border[1]+1]
+	return [final_seq1[::-1], final_seq2[::-1]]
 
 def NWScore(self, seq1, seq2):
 
@@ -78,58 +76,6 @@ def NWScore(self, seq1, seq2):
 		cur_row = [0] * (len2)
 
 	return pre_row
-
-def local_alignment(self, seq1, seq2):
-	column = len(seq1)+1
-	row = len(seq2)+1
-	matrix = np.zeros([row, column], dtype='i,O') 
-	max_score = float('-inf')
-	opt_i = 0
-	opt_j = 0
-	
-	for i in range(1, row):
-		for j in range(1, column):
-			diag = matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[self.seq1[j-1]]][self.seq2[i-1]]
-			up = matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']
-			left = matrix[i][j-1][0] + self.score_matrix.iloc[0]['-']
-			matrix[i][j][0] = max(diag, up, left, 0)
-
-			if matrix[i][j][0]==left:
-				matrix[i][j][1] = 'L'
-
-			if matrix[i][j][0]==diag:
-				matrix[i][j][1] = 'D'
-
-			if matrix[i][j][0]==up:
-				matrix[i][j][1] = 'U'
-			#for local
-			if matrix[i][j][0] >= max_score:
-				max_score = matrix[i][j][0]
-				opt_i = i
-				opt_j = j
-	row = []
-	column = []
-	i = opt_i
-	j = opt_j
-	while matrix[i][j][1]:
-		if matrix[i][j][0] == 0:
-			break
-		elif matrix[i][j][1] == 'D':
-			column.insert(0, seq2[i-1])
-			row.insert(0, seq1[j-1])
-			i -= 1
-			j -= 1
-		elif matrix[i][j][1] == 'U':
-			row.insert(0, '-')
-			column.insert(0, seq2[i-1])
-			i -= 1
-		elif matrix[i][j][1] == 'L':
-			column.insert(0, '-')
-			row.insert(0, seq1[j-1])
-			j -= 1
-	
-	row, column = map(lambda x: "".join(x), [row, column]) 
-	return column, row 
 	
 	
 def global_alignment(self, seq1, seq2):
@@ -219,7 +165,7 @@ class LinearSpaceAlignment():
 		self.t0 = time.time()
 		snapshot1 = tracemalloc.take_snapshot()
 		if self.mode == "local":
-			self.seq1, self.seq2 = LocalToGlobal(self, self.seq1, self.seq2)
+			self.seq1, self.seq2 = getGlobal(self, self.seq1, self.seq2)
 		self.aligned_seq1, self.aligned_seq2 = Hirschberg(self, self.seq1, self.seq2)
 		self.t1 = time.time()
 		snapshot2 = tracemalloc.take_snapshot()
@@ -227,9 +173,8 @@ class LinearSpaceAlignment():
 
 
 	def print_results(self):
-    	
+		
 		print("\n\n==========   Hirschberg  ==========")
-		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
 		print("Total run time in seconds: ", str(round(self.t1 - self.t0, 4)))
 		if len(self.aligned_seq1) == 0:
 			return

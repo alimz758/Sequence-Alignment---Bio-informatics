@@ -42,6 +42,8 @@ def get_alignments():
     mode = get_mode()
     seq1, seq2 = get_sequence()
     score_matrix_df = get_score_matrix()
+    print("\n================== Results ==================")
+    print("Total sequence length is: ", len(seq1) + len(seq2))
     # global
     if mode == "global":
         # Needleman–Wunsch_algorithm

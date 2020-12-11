@@ -139,7 +139,6 @@ class SequenceInit(object):
 	def print_results(self, t1, t0):
 	
 		print("\n\n==========   Needleman–Wunsch  ==========")
-		print("Total sequence length is: ", len(self.seq1) + len(self.seq2))
 		print(self.path_matrix)
 		print('Max {} alignment Score is: {}'.format(self.mode, self.max_score))
 		print("Total run time in seconds: ", str(round(t1-t0, 4)))
