@@ -8,7 +8,7 @@ This program can run for global alignment and local alignments utilizing two dif
 
 ## How to Run
 
-> python main.py  \<Mode> <SEQ1.txt> <SEQ2.txt> <SCORE_MATRIX.csv> 
+> python main.py  \<MODE> <SEQ1.txt> <SEQ2.txt> <SCORE_MATRIX.csv> 
 
 To run this programm you need to specify 4 things in the above order.
 
@@ -22,7 +22,7 @@ To run this programm you need to specify 4 things in the above order.
 
 ### Modes
 
-There are 4 different modes to get sequence alignments:
+There are 2 different modes to get sequence alignments:
 
 1. `global`: Get all global alignments using `Needleman–Wunsch` and `Hirschberg`
 
@@ -54,8 +54,8 @@ G,  -1, -1, -1, 2,  -1
 
 For instance this would return all local alignments using both algorithms:
 
-```
 > python main.py local seq1.txt seq2.txt score_matrix.csv
+```
 ================== Results ==================
 Sequence1:  ATTCG
 Sequence2:  ATG
