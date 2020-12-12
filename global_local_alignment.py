@@ -151,7 +151,7 @@ class SequenceInit(object):
 			print(alignment[1])
 			print()
 			count += 1
-		print("Memory Usage:")
+		print("Memory Usage(using `tracemalloc`, the first stats):")
 		for stat in self.top_stats[:1]:
 			print(str(stat).rsplit(":", 1)[1])
 		print()

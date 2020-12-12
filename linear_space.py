@@ -14,70 +14,77 @@ COL_MAP = {
 	'-': 4
 }
 
-def get_max_score(scoreL, scoreR):
+# get the index of sum max of sum elements
+def get_y_mid(scoreL, scoreR):
 	max_index = 0
-	max_sum = float('-Inf')
+	max_score = float('-Inf')
 	for i, (l, r) in enumerate(zip(scoreL, scoreR[::-1])):
-		if sum([l, r]) > max_sum:
-			max_sum = sum([l, r])
+		if sum([l, r]) > max_score:
+			max_score = sum([l, r])
 			max_index = i
 	return max_index 
 
-
+# get the optimal local point; using two rows of the matrix
 def get_opt_points(self, seq1, seq2):
-	matrix = np.zeros((len(seq1) + 1, len(seq2) + 1))
+	matrix = [[0 for i in range(len(seq2)+1)], [0]]
 	max_score = 0
 	opt_i = 0
 	opt_j = 0
 	
 	for i in range(1, len(seq1) + 1):
 		for j in range(1, len(seq2)+1):
-			matrix[i][j] = max(matrix[i-1][j-1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]],
-							   matrix[i][j-1] + self.score_matrix.iloc[0]['-'],
-							   matrix[i-1][j] + self.score_matrix.iloc[0]['-'],
-							   0)
-			if matrix[i][j] > max_score:
-				max_score = matrix[i][j]
+			matrix[1].append(max(matrix[0][j-1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], 
+                        	matrix[1][j-1] + self.score_matrix.iloc[0]['-'], 
+                         	matrix[0][j] + self.score_matrix.iloc[4]['A'],
+                          	0))
+			if(matrix[1][j] > max_score):
+				max_score = matrix[1][j]
 				opt_i = i-1
 				opt_j = j-1
-				
-	return [opt_i, opt_j]
+
+		matrix[0] = matrix[1][:]
+		matrix[1] = [0]
+  
+	self.max_score = max_score		
+	return opt_i, opt_j
 
 
-def getGlobal(self, seq1, seq2):
-	border = get_opt_points(self, seq1, seq2)
-	new_seq1 = seq1[:border[0]+1]
-	new_seq2 = seq2[:border[1]+1]
-	new_seq1_reversed = new_seq1[::-1]
-	new_seq2_reversed = new_seq2[::-1]
-	border = get_opt_points(self, new_seq1_reversed, new_seq2_reversed)
-	final_seq1 = new_seq1_reversed[:border[0]+1]
-	final_seq2 = new_seq2_reversed[:border[1]+1]
-	return final_seq1[::-1], final_seq2[::-1]
+# trim sequences for local alignment
+def getCropped(self, seq1, seq2):
+	opt_i, opt_j = get_opt_points(self, seq1, seq2)
+	new_seq1 = seq1[:opt_i+1]
+	new_seq2 = seq2[:opt_j+1]
+	opt_i, opt_j = get_opt_points(self, new_seq1[::-1], new_seq2[::-1])
 
+	return new_seq1[::-1][:opt_i+1][::-1], new_seq2[::-1][:opt_j+1][::-1]
+
+
+# gets the last line of the Needleman-Wunsch matrix
 def NWScore(self, seq1, seq2):
 
 	len1 = len(seq1) + 1
 	len2 = len(seq2) + 1
-	pre_row = [0] * (len2)
-	cur_row = [0] * (len2)
+	last_line = [0] * (len2)
+	current_line = [0] * (len2)
 
 	for j in range(1, len2):
-		pre_row[j] = pre_row[j - 1] + self.score_matrix.iloc[4]['A']
+		last_line[j] = last_line[j - 1] + self.score_matrix.iloc[4]['A']
 
 	for i in range(1, len1):
-		cur_row[0] = self.score_matrix.iloc[0]['-'] + pre_row[0]
+		current_line[0] = self.score_matrix.iloc[0]['-'] + last_line[0]
 		for j in range(1, len2):
-			cur_row[j] = max(pre_row[j - 1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], 
-							pre_row[j] + self.score_matrix.iloc[0]['-'], 
-							cur_row[j - 1] + self.score_matrix.iloc[4]['A'])
+			current_line[j] = max(last_line[j - 1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], 
+							last_line[j] + self.score_matrix.iloc[0]['-'], 
+							current_line[j - 1] + self.score_matrix.iloc[4]['A'])		
 
-		pre_row = cur_row
-		cur_row = [0] * (len2)
+		last_line = current_line
+		current_line = [0] * (len2)
 
-	return pre_row
+	return last_line
 	
 	
+# linear space global alignment
+#it's used when one or both sequences have length == 1 therefore linear space
 def global_alignment(self, seq1, seq2):
 	row = len(seq1)+1
 	column = len(seq2)+1
@@ -143,12 +150,12 @@ def Hirschberg(self, seq1, seq2):
 		xmid = len1 // 2
 		scoreL = NWScore(self, seq1[:xmid], seq2)
 		scoreR = NWScore(self, seq1[xmid:][::-1], seq2[::-1])
-		ymid = get_max_score(scoreL, scoreR)
-
+		ymid = get_y_mid(scoreL, scoreR)
 		rowLeft, columnUp = Hirschberg(self, seq1[:xmid], seq2[:ymid])
 		rowRight, columnDown = Hirschberg(self, seq1[xmid:], seq2[ymid:])
 		row = rowLeft + rowRight
 		column = columnUp + columnDown
+
 	return row, column
 
 
@@ -158,6 +165,7 @@ class LinearSpaceAlignment():
 		self.seq1 = seq1
 		self.seq2 = seq2
 		self.mode = mode
+		self.score_matrix = 0
 		self.row_size = len(seq1) + 1
 		self.col_size = len(seq2) + 1
 		self.score_matrix = score_matrix
@@ -165,7 +173,7 @@ class LinearSpaceAlignment():
 		self.t0 = time.time()
 		snapshot1 = tracemalloc.take_snapshot()
 		if self.mode == "local":
-			self.seq1, self.seq2 = getGlobal(self, self.seq1, self.seq2)
+			self.seq1, self.seq2 = getCropped(self, self.seq1, self.seq2)
 		self.aligned_seq1, self.aligned_seq2 = Hirschberg(self, self.seq1, self.seq2)
 		self.t1 = time.time()
 		snapshot2 = tracemalloc.take_snapshot()
@@ -175,6 +183,7 @@ class LinearSpaceAlignment():
 	def print_results(self):
 		
 		print("\n\n==========   Hirschberg  ==========")
+		#print('Max {} alignment Score is: {}'.format(self.mode, self.max_score))
 		print("Total run time in seconds: ", str(round(self.t1 - self.t0, 4)))
 		if len(self.aligned_seq1) == 0:
 			return
@@ -182,7 +191,7 @@ class LinearSpaceAlignment():
 		print(self.aligned_seq1)
 		print(self.aligned_seq2)
 		print()
-		print("Memory Usage:")
+		print("Memory Usage(using `tracemalloc`, the first stats):")
 		for stat in self.top_stats[:1]:
 			print(str(stat).rsplit(":", 1)[1])
 		print()

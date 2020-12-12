@@ -8,7 +8,9 @@ This program can run for global alignment and local alignments utilizing two dif
 
 ## How to Run
 
-To run this programm you need to specify 4 things.
+> python main <MODE> <SEQ1.txt> <SEQ2.txt> <SCORE_MATRIX.csv>
+
+To run this programm you need to specify 4 things in the above order.
 
 1. Mode 
 
@@ -26,26 +28,13 @@ There are 4 different modes to get sequence alignments:
 
 2. `local`: Get all local alignments using `Needleman–Wunsch` and `Hirschberg`
 
+### SEQ1.txt
 
-For instance this would return all global alignments using `Needleman–Wunsch_algorithm`:
+Text file containing the Sequence1 characters(A, C, T, G are acceptable) 
 
-```
-> python main.py global seq1.txt seq2.txt score_matrix.csv
-Total sequence length is:  7
-[[( 0, 0) (-1, 'L') (-2, 'L') (-3, 'L') (-4, 'L')]
- [(-1, 'U') ( 2, 'D') ( 1, 'L') ( 0, 'L') (-1, 'LD')]
- [(-2, 'U') ( 1, 'U') ( 4, 'D') ( 3, 'D') ( 2, 'L')]
- [(-3, 'U') ( 0, 'DU') ( 3, 'U') ( 3, 'D') ( 5, 'D')]]
-Max global alignment Score is: 5
-Alignmnet # 1
-ATTA
-AT-A
+### SEQ2.txt
 
-Alignmnet # 2
-ATTA
-A-TA
-```
-
+Text file containing the Sequence2 characters(A, C, T, G are acceptable) 
 
 ### Score Matrix
 
@@ -61,4 +50,41 @@ T,  -1, -1, 2,  -1, -1
 G,  -1, -1, -1, 2,  -1
 -,  -1, -1, -1, -1
 
+```
+
+For instance this would return all local alignments using both algorithms:
+
+```
+> python main.py local seq1.txt seq2.txt score_matrix.csv
+================== Results ==================
+Sequence1:  ATTCG
+Sequence2:  ATG
+Total sequences length is:  8
+
+
+==========   Needleman–Wunsch  ==========
+[[(0, 0) (0, 0) (0, 0) (0, 0) (0, 0) (0, 0)]
+ [(0, 0) (2, 'D') (0, 'L') (0, '') (0, '') (0, '')]
+ [(0, 0) (0, 'U') (4, 'D') (2, 'LD') (0, 'L') (0, '')]
+ [(0, 0) (0, '') (2, 'U') (3, 'D') (1, 'LD') (2, 'D')]]
+Max local alignment Score is: 4
+Total run time in seconds:  0.016
+Alignmnet # 1
+AT
+AT
+
+Memory Usage(using `tracemalloc`, the first stats):
+ size=7930 B (+7930 B), count=109 (+109), average=73 B
+
+
+
+==========   Hirschberg  ==========
+Max local alignment Score is: 4
+Total run time in seconds:  0.028
+Alignmnet # 1
+AT
+AT
+
+Memory Usage(using `tracemalloc`, the first stats):
+ size=1408 B (+1408 B), count=3 (+3), average=469 B
 ```
