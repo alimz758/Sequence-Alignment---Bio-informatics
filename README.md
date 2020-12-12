@@ -8,7 +8,7 @@ This program can run for global alignment and local alignments utilizing two dif
 
 ## How to Run
 
-> python main.py <MODE> <SEQ1.txt> <SEQ2.txt> <SCORE_MATRIX.csv>
+> python main.py  \<Mode> <SEQ1.txt> <SEQ2.txt> <SCORE_MATRIX.csv> 
 
 To run this programm you need to specify 4 things in the above order.
 
