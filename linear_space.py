@@ -90,7 +90,7 @@ def global_alignment(self, seq1, seq2):
 	matrix = np.zeros([len1, len2], dtype='i') 
 	
 	for i in range(1, len1):
-    		matrix[i][0] = i * self.score_matrix.iloc[4]['A']
+		matrix[i][0] = i * self.score_matrix.iloc[4]['A']
       
 	for i in range(1, len2):
 		matrix[0][i] = i * self.score_matrix.iloc[0]['-']
@@ -115,8 +115,8 @@ def global_alignment(self, seq1, seq2):
 			aligned_seq1.insert(0, seq1[i-1])
 			aligned_seq2.insert(0, '-')
 			i -= 1
-		elif i>0 and matrix[i][j] == matrix[i][j-1] + self.score_matrix.iloc[0]['-']:
-			aligned_seq1.insert(0, '-')
+		elif j>0 and matrix[i][j] == matrix[i][j-1] + self.score_matrix.iloc[0]['-']:
+    			aligned_seq1.insert(0, '-')
 			aligned_seq2.insert(0, seq2[j-1])
 			j -= 1
 	aligned_seq1, aligned_seq2 = map(lambda x: "".join(x), [aligned_seq1, aligned_seq2]) 
@@ -125,19 +125,19 @@ def global_alignment(self, seq1, seq2):
 
 
 def Hirschberg(self, seq1, seq2):
-	row = ""
-	column = ""
+	aligned_seq1 = ""
+	aligned_seq2 = ""
 	len1 = len(seq1)
 	len2 = len(seq2)
  
 	if len(seq1) == 0:
-		column = '-' * len2
-		row = seq2
+		aligned_seq2 = '-' * len2
+		aligned_seq1 = seq2
 	elif len(seq2) == 0:
-		column = seq1
-		row = '-' * len1
+		aligned_seq2 = seq1
+		aligned_seq1 = '-' * len1
 	elif len1 == 1 or len2 == 1:
-		row, column = global_alignment(self, seq1, seq2)
+		aligned_seq1, aligned_seq2 = global_alignment(self, seq1, seq2)
 	else:
 
 		xmid = len1 // 2
@@ -146,10 +146,10 @@ def Hirschberg(self, seq1, seq2):
 		ymid = get_y_mid(scoreL, scoreR)
 		rowLeft, columnUp = Hirschberg(self, seq1[:xmid], seq2[:ymid])
 		rowRight, columnDown = Hirschberg(self, seq1[xmid:], seq2[ymid:])
-		row = rowLeft + rowRight
-		column = columnUp + columnDown
+		aligned_seq1 = rowLeft + rowRight
+		aligned_seq2 = columnUp + columnDown
 
-	return row, column
+	return aligned_seq1, aligned_seq2
 
 
 class LinearSpaceAlignment():
