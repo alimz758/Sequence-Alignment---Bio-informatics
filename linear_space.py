@@ -84,51 +84,44 @@ def NWScore(self, seq1, seq2):
 	
 	
 # linear space global alignment
-#it's used when one or both sequences have length == 1 therefore linear space
 def global_alignment(self, seq1, seq2):
-	row = len(seq1)+1
-	column = len(seq2)+1
-	matrix = np.zeros([row, column], dtype='i,O') 
+	len1 = len(seq1)+1
+	len2 = len(seq2)+1
+	matrix = np.zeros([len1, len2], dtype='i') 
 	
-	for i in range(1, column):
-		matrix[0][i][0] = i * self.score_matrix.iloc[0]['-']
-		matrix[0][i][1] = 'L'
+	for i in range(1, len1):
+    		matrix[i][0] = i * self.score_matrix.iloc[4]['A']
+      
+	for i in range(1, len2):
+		matrix[0][i] = i * self.score_matrix.iloc[0]['-']
 
-	for i in range(1, row):
-		matrix[i][0][0] = i * self.score_matrix.iloc[4]['A']
-		matrix[i][0][1] = 'U'
+	for i in range(1, len1):
+		for j in range(1, len2):
+			matrix[i][j] = max(matrix[i-1][j-1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]],
+					   matrix[i-1][j] + self.score_matrix.iloc[4]['A'], 
+					   matrix[i][j-1] + self.score_matrix.iloc[0]['-'])
 
-	for i in range(1, row):
-		for j in range(1, column):
-			matrix[i][j][0] = max(matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]], matrix[i-1][j][0] + self.score_matrix.iloc[4]['A'], matrix[i][j-1][0] + self.score_matrix.iloc[0]['-'])
-			if matrix[i][j][0] == matrix[i-1][j-1][0] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]]:
-				matrix[i][j][1] =  'D'
-			elif matrix[i][j][0] == matrix[i-1][j][0] + self.score_matrix.iloc[4]['A']:
-				matrix[i][j][1] = 'U'
-			else:
-				matrix[i][j][1] = 'L'
-
-	row = []
-	column = []
+	aligned_seq1 = []
+	aligned_seq2 = []
 	i = len(seq1)
 	j = len(seq2)
-	while matrix[i][j][1]:
-		if matrix[i][j][1] == 'D':
-			column.insert(0, seq2[j-1])
-			row.insert(0, seq1[i-1])
+	while i>0 or j>0:
+		if i>0 and  j>0 and matrix[i][j] == matrix[i-1][j-1] + self.score_matrix.iloc[COL_MAP[seq1[i-1]]][seq2[j-1]]:
+			aligned_seq1.insert(0, seq1[i-1])			
+			aligned_seq2.insert(0, seq2[j-1])
 			i -= 1
 			j -= 1
-		elif matrix[i][j][1] == 'U':
-			column.insert(0, '-')
-			row.insert(0, seq1[i-1])
+		elif i>0 and matrix[i][j] == matrix[i-1][j] + self.score_matrix.iloc[4]['A']:
+			aligned_seq1.insert(0, seq1[i-1])
+			aligned_seq2.insert(0, '-')
 			i -= 1
-		elif matrix[i][j][1] == 'L':
-			row.insert(0, '-')
-			column.insert(0, seq2[j-1])
+		elif i>0 and matrix[i][j] == matrix[i][j-1] + self.score_matrix.iloc[0]['-']:
+			aligned_seq1.insert(0, '-')
+			aligned_seq2.insert(0, seq2[j-1])
 			j -= 1
-	row, column = map(lambda x: "".join(x), [row, column]) 
+	aligned_seq1, aligned_seq2 = map(lambda x: "".join(x), [aligned_seq1, aligned_seq2]) 
 
-	return row, column 
+	return aligned_seq1, aligned_seq2  
 
 
 def Hirschberg(self, seq1, seq2):
